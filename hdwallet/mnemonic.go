@@ -1,6 +1,7 @@
 package hdwallet
 
 // https://github.com/brianium/mnemonic/tree/master
+// Tester : https://iancoleman.io/bip39/#english
 
 import (
 	"encoding/hex"
