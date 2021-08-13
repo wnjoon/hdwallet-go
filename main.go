@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/tyler-smith/go-bip32"
@@ -9,20 +10,30 @@ import (
 )
 
 func main() {
-	mnemonicWord, err := hdwallet.GenerateMnemonicWord("BIP39_128")
+
+	bipType := "BIP39_128"
+	passphrase := ""
+
+	ent, err := hdwallet.GetEntropy(bipType)
 	utils.HandleError(err)
+	fmt.Println("- entropy : ", hex.EncodeToString(ent))
 
-	fmt.Println("mnemonicWord : ", mnemonicWord)
+	mnemonicWord, err := hdwallet.GenerateMnemonicWord(ent, bipType)
+	utils.HandleError(err)
+	fmt.Println("- mnemonicWord : ", mnemonicWord)
 
-	rootSeed := hdwallet.GenerateRootSeed(mnemonicWord, "")
-	fmt.Println("rootSeed : ", rootSeed)
+	rootSeed := hdwallet.GenerateRootSeed(mnemonicWord, passphrase)
+	fmt.Println("- rootSeed : ", rootSeed)
+	fmt.Println()
 
 	masterKey, _ := bip32.NewMasterKey(rootSeed.Bytes)
 	publicKey := masterKey.PublicKey()
-	fmt.Println("masterKey : ", masterKey)
-	fmt.Println("publicKey : ", publicKey)
+	fmt.Println("- masterKey : ", masterKey)
+	fmt.Println("- publicKey : ", publicKey)
+	fmt.Println()
 
 	ck0, _ := masterKey.NewChildKey(0)
-	fmt.Println("Child0PrivateKey : ", ck0)
-	fmt.Println("Child0PublicKey : ", ck0.PublicKey())
+	fmt.Println("- Child0PrivateKey : ", ck0)
+	fmt.Println("- Child0PublicKey : ", ck0.PublicKey())
+	fmt.Println()
 }

@@ -4,20 +4,12 @@ package hdwallet
 // Tester : https://iancoleman.io/bip39/#english
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func GenerateMnemonicWord(mnemonicType string) ([]string, error) {
-
-	ent, err := GetEntropy(mnemonicType)
-	if err != nil {
-		return nil, fmt.Errorf("Error generating random entropy: %s", err)
-	}
-
-	fmt.Println("entropy: ", hex.EncodeToString(ent))
+func GenerateMnemonicWord(ent []byte, mnemonicType string) ([]string, error) {
 
 	const chunkSize = 11
 	bits := CheckSummed(ent)
