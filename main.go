@@ -19,17 +19,10 @@ func main() {
 
 	masterKey, _ := bip32.NewMasterKey(rootSeed.Bytes)
 	publicKey := masterKey.PublicKey()
-
 	fmt.Println("masterKey : ", masterKey)
 	fmt.Println("publicKey : ", publicKey)
 
 	ck0, _ := masterKey.NewChildKey(0)
-	ck1, _ := masterKey.NewChildKey(1)
 	fmt.Println("Child0PrivateKey : ", ck0)
-	fmt.Println("Child0PrivateKey : ", ck0.IsPrivate)
 	fmt.Println("Child0PublicKey : ", ck0.PublicKey())
-	fmt.Println("Child0PublicKey : ", ck0.PublicKey().IsPrivate)
-	fmt.Println()
-	fmt.Println("Child1PrivateKey : ", ck1)
-	fmt.Println("Child1PrivateKey : ", ck1.PublicKey())
 }
