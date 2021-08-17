@@ -20,7 +20,7 @@ func GenerateMnemonicWord(ent []byte, mnemonicType string) ([]string, error) {
 		stringVal := string(bits[i : chunkSize+i])
 		wordIndex, err := strconv.ParseInt(stringVal, 2, 64)
 		if err != nil {
-			return nil, fmt.Errorf("Could not convert %s to word index", stringVal)
+			return nil, fmt.Errorf("could not convert %s to word index", stringVal)
 		}
 		word := Mnemonic_wordlist_english[wordIndex]
 		if err != nil {

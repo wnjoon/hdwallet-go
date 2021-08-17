@@ -28,7 +28,7 @@ func GetEntropy(mnemonicType string) ([]byte, error) {
 	}
 
 	if bitLength < 128 || bitLength > 256 || bitLength%32 > 0 {
-		return nil, errors.New("Entropy length must be between 128 and 256 inclusive, and be divisible by 32")
+		return nil, errors.New("entropy length must be between 128 and 256 inclusive, and be divisible by 32")
 	}
 
 	entropyBytes := make([]byte, bitLength/8)
