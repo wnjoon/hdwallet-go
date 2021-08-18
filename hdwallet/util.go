@@ -14,7 +14,6 @@ import (
 
 	"github.com/FactomProject/basen"
 	"golang.org/x/crypto/ripemd160"
-	// "github.com/FactomProject/basen"
 )
 
 const (
@@ -27,6 +26,7 @@ const (
 )
 
 var (
+	one   = new(big.Int).SetInt64(1)
 	curve = elliptic.P256()
 	// curve       = btcutil.Secp256k1()
 
@@ -58,6 +58,9 @@ var (
 
 	// ErrInvalidPublicKey is returned when a derived public key is invalid
 	ErrInvalidPublicKey = errors.New("invalid public key")
+
+	ErrShortBuffer   = errors.New("short buffer")
+	ErrUnexpectedEOF = errors.New("unexpected EOF")
 )
 
 func HandleError(err error) {

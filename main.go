@@ -8,10 +8,11 @@ import (
 )
 
 func main() {
-	runTest()
+	GenerateKey()
 }
 
-func runTest() {
+func GenerateKey() {
+
 	bipType := "BIP39_128"
 	passphrase := ""
 
@@ -20,14 +21,11 @@ func runTest() {
 	 */
 	entropy, _ := hdwallet.GetEntropy(bipType)
 	fmt.Println("- entropy(hex) : ", hex.EncodeToString(entropy))
-	// entropy, _ := hex.DecodeString("f28544cc2886c2ec2595d14c5b441329")
-	// fmt.Println("- entropy(hex) : ", entropy)
 
 	/*
 	 * 2. Generate Mnemonic Code
 	 */
-	mnemonicCode, err := hdwallet.GenerateMnemonicWord(entropy, bipType)
-	hdwallet.HandleError(err)
+	mnemonicCode, _ := hdwallet.GenerateMnemonicWord(entropy, bipType)
 	fmt.Println("- mnemonicCode : ", mnemonicCode)
 
 	/*
@@ -47,18 +45,16 @@ func runTest() {
 	 */
 	publicKey := hdwallet.GetPublicKeyForPrivateKey(masterKey)
 	fmt.Println("- Master : Public : ", hex.EncodeToString(publicKey))
-	// publicKey := privateKey.GeneratePublicKey()
-	// fmt.Println("- publicKey : ", hex.EncodeToString(publicKey.Key))
 
 	/*
 	 * 6. Generate Child Key : Private
 	 */
 	child0, _ := masterKey.GenerateChildKey(0)
 	fmt.Println("- Child0 : Private : ", hex.EncodeToString(child0.Key))
-	fmt.Println("- Child0 : IsPrivate : ", child0.IsPrivate)
 
 	child0_pub := hdwallet.GetPublicKeyForPrivateKey(child0)
-	fmt.Println("- Child0_pub : Public : ", hex.EncodeToString(child0_pub))
-	// child0_public := child0.GeneratePublicKey()
-	// fmt.Println("- Child0 : Public : ", hex.EncodeToString(child0_public.Key), " ", child0.IsPrivate)
+	fmt.Println("- Child0 : Public : ", hex.EncodeToString(child0_pub))
 }
+
+// http://cryptostudy.xyz/crypto/article/9-HD-키-생성
+// https://kjur.github.io/jsrsasign/sample/sample-ecdsa.html
