@@ -4,93 +4,54 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"fmt"
-	"log"
-	"math/big"
 
-	"github.com/tyler-smith/go-bip32"
 	"github.com/wnjoon/hdwallet-go/hdwallet"
-
-	"github.com/jbenet/go-base58"
 )
 
 func main() {
 
-	testOriginal()
-	// testBIPtoECDSA()
-
+	runTest()
 }
 
-func testOriginal() {
+func runTest() {
 	bipType := "BIP39_128"
 	passphrase := ""
 
-	// ent, err := hdwallet.GetEntropy(bipType)
-	ent, err := hex.DecodeString("f28544cc2886c2ec2595d14c5b441329")
+	/*
+	 * 1. Generate Entropy
+	 */
+	entropy, _ := hdwallet.GetEntropy(bipType)
+	fmt.Println("- entropy(hex) : ", hex.EncodeToString(entropy))
+	// entropy, _ := hex.DecodeString("f28544cc2886c2ec2595d14c5b441329")
+	// fmt.Println("- entropy(hex) : ", entropy)
 
+	/*
+	 * 2. Generate Mnemonic Code
+	 */
+	mnemonicCode, err := hdwallet.GenerateMnemonicWord(entropy, bipType)
 	hdwallet.HandleError(err)
-	fmt.Println("- entropy(hex) : ", hex.EncodeToString(ent))
+	fmt.Println("- mnemonicCode : ", mnemonicCode)
 
-	mnemonicWord, err := hdwallet.GenerateMnemonicWord(ent, bipType)
-	hdwallet.HandleError(err)
-	fmt.Println("- mnemonicWord : ", mnemonicWord)
-
-	rootSeed := hdwallet.GenerateRootSeed(mnemonicWord, passphrase)
+	/*
+	 * 3. Generate Binary(Root) Seed
+	 */
+	rootSeed := hdwallet.GenerateRootSeed(mnemonicCode, passphrase)
 	fmt.Println("- rootSeed : ", rootSeed)
-	fmt.Println()
 
+	/*
+	 * 4. Generate Master(Private) Key
+	 */
 	privateKey, _ := hdwallet.GenerateKey(elliptic.P256(), rootSeed.Bytes)
-	fmt.Println("- privateKey.Bytes : ", hex.EncodeToString(privateKey.D.Bytes()))
-	fmt.Println("")
+	fmt.Println("- privateKey(Hex) : ", hex.EncodeToString(privateKey.D.Bytes()))
 
-	if elliptic.P256().IsOnCurve(privateKey.PublicKey.X, privateKey.PublicKey.Y) {
-		fmt.Println("	- publicKey.X : ", privateKey.PublicKey.X.String())
-		fmt.Println("	- publicKey.Y : ", privateKey.PublicKey.Y.String())
-		concatPubXY := privateKey.PublicKey.Y.String() + privateKey.PublicKey.X.String()
-		fmt.Println("	- publicKey.X + publicKey.Y : ", concatPubXY)
-		publicKeyXY, _ := new(big.Int).SetString(concatPubXY, 10)
-		fmt.Println("- publicKey.XY.Bytes : ", hex.EncodeToString(publicKeyXY.Bytes()))
+	/*
+	 * 5. Generate Public Key
+	 */
+	publicKey_x := privateKey.PublicKey.X
+	publicKey_y := privateKey.PublicKey.Y
 
+	if elliptic.P256().IsOnCurve(publicKey_x, publicKey_y) {
+		publicKey := elliptic.Marshal(elliptic.P256(), publicKey_x, publicKey_y)
+		fmt.Println("- publicKey : ", hex.EncodeToString(publicKey[:]))
 	}
-}
-
-func testBIPtoECDSA() {
-
-	seed, err := bip32.NewSeed()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	master, err := bip32.NewMasterKey(seed)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	decoded := base58.Decode(master.B58Serialize())
-	privateKey := decoded[46:78]
-	// fmt.Println(hexutil.Encode(privateKey))     // 0x801f14cc6b5f2b0785916685c838c8e64f7f4529a9ca7507c90e5f9078cefc07
-	fmt.Println(hex.EncodeToString(privateKey)) // 0x801f14cc6b5f2b0785916685c838c8e64f7f4529a9ca7507c90e5f9078cefc07
-
-	pubDecoded := base58.Decode(master.PublicKey().B58Serialize())
-	publicKey := pubDecoded[45:78]
-	fmt.Println(hex.EncodeToString(publicKey)) // 0x801f14cc6b5f2b0785916685c838c8e64f7f4529a9ca7507c90e5f9078cefc07
-
-	// m/44'
-	// key, err := master.NewChildKey(2147483648 + 44)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// decoded := base58.Decode(key.B58Serialize())
-	// privateKey := decoded[46:78]
-	// fmt.Println(hexutil.Encode(privateKey)) // 0x801f14cc6b5f2b0785916685c838c8e64f7f4529a9ca7507c90e5f9078cefc07
-
-	// // Hex private key to ECDSA private key
-	// privateKeyECDSA, err := crypto.ToECDSA(privateKey)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// // ECDSA private key to hex private key
-	// privateKey = crypto.FromECDSA(privateKeyECDSA)
-	// fmt.Println(hexutil.Encode(privateKey)) // 0x801f14cc6b5f2b0785916685c838c8e64f7f4529a9ca7507c90e5f9078cefc07
 }
