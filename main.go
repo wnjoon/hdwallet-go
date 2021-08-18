@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/elliptic"
 	"encoding/hex"
 	"fmt"
 
@@ -9,7 +8,6 @@ import (
 )
 
 func main() {
-
 	runTest()
 }
 
@@ -39,19 +37,28 @@ func runTest() {
 	fmt.Println("- rootSeed : ", rootSeed)
 
 	/*
-	 * 4. Generate Master(Private) Key
+	 * 4. Generate Master Key : Private
 	 */
-	privateKey, _ := hdwallet.GenerateKey(elliptic.P256(), rootSeed.Bytes)
-	fmt.Println("- privateKey(Hex) : ", hex.EncodeToString(privateKey.D.Bytes()))
+	masterKey, _ := hdwallet.GenerateMasterKey(rootSeed.Bytes)
+	fmt.Println("- Master : Private : ", hex.EncodeToString(masterKey.Key))
 
 	/*
-	 * 5. Generate Public Key
+	 * 5. Generate Master Key : Public
 	 */
-	publicKey_x := privateKey.PublicKey.X
-	publicKey_y := privateKey.PublicKey.Y
+	publicKey := hdwallet.GetPublicKeyForPrivateKey(masterKey)
+	fmt.Println("- Master : Public : ", hex.EncodeToString(publicKey))
+	// publicKey := privateKey.GeneratePublicKey()
+	// fmt.Println("- publicKey : ", hex.EncodeToString(publicKey.Key))
 
-	if elliptic.P256().IsOnCurve(publicKey_x, publicKey_y) {
-		publicKey := elliptic.Marshal(elliptic.P256(), publicKey_x, publicKey_y)
-		fmt.Println("- publicKey : ", hex.EncodeToString(publicKey[:]))
-	}
+	/*
+	 * 6. Generate Child Key : Private
+	 */
+	child0, _ := masterKey.GenerateChildKey(0)
+	fmt.Println("- Child0 : Private : ", hex.EncodeToString(child0.Key))
+	fmt.Println("- Child0 : IsPrivate : ", child0.IsPrivate)
+
+	child0_pub := hdwallet.GetPublicKeyForPrivateKey(child0)
+	fmt.Println("- Child0_pub : Public : ", hex.EncodeToString(child0_pub))
+	// child0_public := child0.GeneratePublicKey()
+	// fmt.Println("- Child0 : Public : ", hex.EncodeToString(child0_public.Key), " ", child0.IsPrivate)
 }
