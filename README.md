@@ -17,33 +17,40 @@ A signature algorithm for ECDSA in Hyperledger fabric is 'secp256r1', however, A
 Entropy and Binary seed was developed for my own, however generating master key and child key were kind of difficult things when hashing with HMAC-SHA512. There was a few information about Secret(normally used 'bitcoin seed' for bitcoin), a parameter for hashing.  
 Then I used open library from ['tyler-smith'](https://github.com/tyler-smith/go-bip32), who developed most of HD wallet functions already.  
 
-## Sample
+## P256(secp256r1) - That's why I write this code!
+This code is started from testing *'Is it possible to adjust HD wallet to Hyperledger Fabric, which uses secp256r1, not secp256k1 used in bitcoin system?'*.  
+To adjust secp256r1, I modified some codes from original. You can find it [key.go](https://github.com/wnjoon/hdwallet-go/blob/main/hdwallet/key.go).  
+From generate entropy to binary seed is same as bitcoin, but generate key is different because of curve values.  
+First, Get the privateKeyBytes which is half of intermediary(64 bytes) and make it P256 usable with curve(elliptic.P256()) to get a private key.
+And Get the public key using curves(x, y). Child Key has same mechanism(little bit different).
+
+
+## Sample (Tester)
 ```go
-func main() {
-	bipType := "BIP39_128"
-	passphrase := ""
+func GenerateRootKey() *hdwallet.Key {
 
-	ent, err := hdwallet.GetEntropy(bipType)
-	utils.HandleError(err)
-	fmt.Println("- entropy : ", hex.EncodeToString(ent))
+	// 1. Entropy
+	entropy, _ := hdwallet.GetEntropy(bipType)
+	// 2. Mnemonic code
+	mnemonicCode, _ := hdwallet.GenerateMnemonicWord(entropy, bipType)
+	// 3. Root Seed
+	rootSeed := hdwallet.GenerateRootSeed(mnemonicCode, passphrase)
+	// 4. Generate Root Private Key
+	rootKey, _ := hdwallet.CreateRootKey(rootSeed.Bytes)
 
-	mnemonicWord, err := hdwallet.GenerateMnemonicWord(ent, bipType)
-	utils.HandleError(err)
-	fmt.Println("- mnemonicWord : ", mnemonicWord)
+	fmt.Printf("\n\nEnvironments\n")
+	PrintEnvInfo(entropy, mnemonicCode, rootSeed.Bytes)
+	fmt.Printf("\n\nRoot Key\n")
+	PrintKeyInfo(rootKey)
 
-	rootSeed := hdwallet.GenerateRootSeed(mnemonicWord, passphrase)
-	fmt.Println("- rootSeed : ", rootSeed)
-	fmt.Println()
+	return rootKey
+}
 
-	masterKey, _ := bip32.NewMasterKey(rootSeed.Bytes)
-	publicKey := masterKey.PublicKey()
-	fmt.Println("- masterKey : ", masterKey)
-	fmt.Println("- publicKey : ", publicKey)
-	fmt.Println()
+func GenerateChildKey(key *hdwallet.Key, childIdx uint32) *hdwallet.Key {
+	childKey, _ := hdwallet.CreateChildKeyFromPrivateKey(key.PrivateKey, key.PublicKey, key.ChainCode, key.Depth, childIdx)
+	fmt.Printf("\n\nChild Key [%d]\n", childKey.Depth)
+	PrintKeyInfo(childKey)
 
-	ck0, _ := masterKey.NewChildKey(0)
-	fmt.Println("- Child0PrivateKey : ", ck0)
-	fmt.Println("- Child0PublicKey : ", ck0.PublicKey())
-	fmt.Println()
+	return childKey
 }
 ```
