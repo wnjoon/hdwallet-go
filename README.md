@@ -1,10 +1,20 @@
 # hdwallet-go
 
-## Why I tried?
-For adjust HD wallet in Hyperledger Fabric.  
-(There was NO reference or sample)  
-A signature algorithm for ECDSA in Hyperledger fabric is 'secp256r1', however, Almost HD wallet key signatures were 'secp256k1' including Bitcoin. Then I just have to test how HD wallet is generated and what should I do when I want to adjust HD wallet in Hyperledger Fabric.
+## History
+- 2021.08.12 : Init commit, Write entropy and mnemonic functions
+- 2021.08.13 : Write code to generate key (first commit version)
+- 2021.08.17 : Update code to show detail descriptions
+- 2021.08.18 : Adjust secp256r1
+- 2021.08.19 : Adjust child key generation
+- 2021.08.24 : PEM file generation, PrivateKey/PublicKey struct type support
 
+## Purpose
+- Adjust ECDSA 'secp256r1' algorithm, also called P256, to generate HD wallet key
+- Most of HD wallet key is generated with 'secp256k1' since bitcoin uses it
+- Hyperledger Fabric and some blockchain platforms uses secp256r1 -> Test is needed!
+
+## P256(secp256r1)
+- To adjust secp256r1, I modified some codes from original. You can find it [key.go](https://github.com/wnjoon/hdwallet-go/blob/main/hdwallet/key.go)
 
 ## Sequence of generating HD Master Key
 1. Generate Mnemonic code using entropy(random number)
@@ -13,16 +23,8 @@ A signature algorithm for ECDSA in Hyperledger fabric is 'secp256r1', however, A
 4. Front of Master Key (256 bits) is Private key and the other (256 bits) is chaincode, used to generate child key.
 5. Child key is also generated from HMAC-SHA512 and 2 parts of values(private key and chaincode)
 
-## How to develop
-Entropy and Binary seed was developed for my own, however generating master key and child key were kind of difficult things when hashing with HMAC-SHA512. There was a few information about Secret(normally used 'bitcoin seed' for bitcoin), a parameter for hashing.  
-Then I used open library from ['tyler-smith'](https://github.com/tyler-smith/go-bip32), who developed most of HD wallet functions already.  
-
-## P256(secp256r1) - That's why I write this code!
-This code is started from testing *'Is it possible to adjust HD wallet to Hyperledger Fabric, which uses secp256r1, not secp256k1 used in bitcoin system?'*.  
-To adjust secp256r1, I modified some codes from original. You can find it [key.go](https://github.com/wnjoon/hdwallet-go/blob/main/hdwallet/key.go).  
-From generate entropy to binary seed is same as bitcoin, but generate key is different because of curve values.  
-First, Get the privateKeyBytes which is half of intermediary(64 bytes) and make it P256 usable with curve(elliptic.P256()) to get a private key.
-And Get the public key using curves(x, y). Child Key has same mechanism(little bit different).
+## References
+- ['tyler-smith'](https://github.com/tyler-smith/go-bip32)
 
 
 ## Sample (Tester)
@@ -37,10 +39,7 @@ func GenerateRootKey() *hdwallet.Key {
 	rootSeed := hdwallet.GenerateRootSeed(mnemonicCode, passphrase)
 	// 4. Generate Root Private Key
 	rootKey, _ := hdwallet.CreateRootKey(rootSeed.Bytes)
-
-	fmt.Printf("\n\nEnvironments\n")
 	PrintEnvInfo(entropy, mnemonicCode, rootSeed.Bytes)
-	fmt.Printf("\n\nRoot Key\n")
 	PrintKeyInfo(rootKey)
 
 	return rootKey
@@ -48,7 +47,7 @@ func GenerateRootKey() *hdwallet.Key {
 
 func GenerateChildKey(key *hdwallet.Key, childIdx uint32) *hdwallet.Key {
 	childKey, _ := hdwallet.CreateChildKeyFromPrivateKey(key.PrivateKey, key.PublicKey, key.ChainCode, key.Depth, childIdx)
-	fmt.Printf("\n\nChild Key [%d]\n", childKey.Depth)
+	fmt.Printf("\n----- Child Key [%d] -----\n", childKey.Depth)
 	PrintKeyInfo(childKey)
 
 	return childKey

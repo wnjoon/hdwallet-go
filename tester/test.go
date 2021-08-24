@@ -22,9 +22,7 @@ func GenerateRootKey() *hdwallet.Key {
 	// 4. Generate Root Private Key
 	rootKey, _ := hdwallet.CreateRootKey(rootSeed.Bytes)
 
-	fmt.Printf("\n\nEnvironments\n")
 	PrintEnvInfo(entropy, mnemonicCode, rootSeed.Bytes)
-	fmt.Printf("\n\nRoot Key\n")
 	PrintKeyInfo(rootKey)
 
 	return rootKey
@@ -32,7 +30,7 @@ func GenerateRootKey() *hdwallet.Key {
 
 func GenerateChildKey(key *hdwallet.Key, childIdx uint32) *hdwallet.Key {
 	childKey, _ := hdwallet.CreateChildKeyFromPrivateKey(key.PrivateKey, key.PublicKey, key.ChainCode, key.Depth, childIdx)
-	fmt.Printf("\n\nChild Key [%d]\n", childKey.Depth)
+	fmt.Printf("\n----- Child Key [%d] -----\n", childKey.Depth)
 	PrintKeyInfo(childKey)
 
 	return childKey

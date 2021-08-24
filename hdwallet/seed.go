@@ -1,3 +1,7 @@
+/*
+ * [Descrption]
+ * This file creates Binary Seed according to Mnemonic word
+ */
 package hdwallet
 
 import (

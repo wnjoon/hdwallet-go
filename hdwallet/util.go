@@ -1,3 +1,7 @@
+/*
+ * [Descrption]
+ * This file supports utilities to generate hd wallet key
+ */
 package hdwallet
 
 import (
@@ -13,14 +17,11 @@ import (
 	"math/big"
 
 	"github.com/FactomProject/basen"
-	"golang.org/x/crypto/ripemd160"
 )
 
 const (
-	// FirstHardenedChild is the index of the firxt "harded" child key as per the
-	// bip32 spec
+	// FirstHardenedChild is the index of the firxt "harded" child key as per the bip32 spec
 	FirstHardenedChild = uint32(0x80000000)
-
 	// PublicKeyCompressedLength is the byte count of a compressed public key
 	PublicKeyCompressedLength = 33
 )
@@ -122,7 +123,7 @@ func hashSha256(data []byte) ([]byte, error) {
 }
 
 func hashRipeMD160(data []byte) ([]byte, error) {
-	hasher := ripemd160.New()
+	hasher := sha256.New()
 	_, err := io.WriteString(hasher, string(data))
 	if err != nil {
 		return nil, err
